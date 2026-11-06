@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mutate-mvr"
+version = "0.1.0"
+description = "Merge, isolate, delete and clean up MVR files"
+requires-python = ">=3.10"
+dependencies = ["lxml>=5"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+mutate-mvr = "mutate_mvr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -45,21 +45,37 @@ def build_tree(scene, scope="all"):
     return [_node(scene, ids, e, keep) for e in (lay if lay is not None else []) if kind(e) == "Layer"]
 
 
-def _line(n):
-    s = f"{n['id']} {n['name']}"
-    if n["kind"] in ("SceneObject", "FocusPoint") and n["meshes"]:
-        s += f"  [{', '.join(n['meshes'])}]"
+def _cols(n):
+    if n["kind"] in ("SceneObject", "FocusPoint"):
+        return [f"[{', '.join(n['meshes'])}]"] if n["meshes"] else []
     if n["kind"] == "Fixture":
         addr = f"{n['address']} (u{n['universe']}.{n['channel']})" if n["address"] else "unpatched"
-        s += f"  id={n['fixture_id']} mode={n['mode'] or '-'} addr={addr}"
-    return s
+        return [f"id={n['fixture_id']}", f"mode={n['mode'] or '-'}", f"addr={addr}"]
+    return []
 
 
-def render_text(nodes, depth=0):
+def _rows(nodes, prefix="", root=True):
+    """(left text, kind, detail columns) per node, with box-drawing hierarchy."""
+    rows = []
+    for i, n in enumerate(nodes):
+        last = i == len(nodes) - 1
+        branch = "" if root else "└── " if last else "├── "
+        rows.append((f"{prefix}{branch}{n['id']}  {n['name']}", n["kind"], _cols(n)))
+        rows += _rows(n["children"], prefix if root else prefix + ("    " if last else "│   "), False)
+    return rows
+
+
+def render_text(nodes):
+    rows = _rows(nodes)
+    left = max((len(r[0]) for r in rows), default=0)
+    widths = {}
+    for _, k, cols in rows:
+        for j, c in enumerate(cols):
+            widths[(k, j)] = max(widths.get((k, j), 0), len(c))
     out = []
-    for n in nodes:
-        out.append("  " * depth + _line(n))
-        out += render_text(n["children"], depth + 1)
+    for text, k, cols in rows:
+        cells = [c.ljust(widths[(k, j)]) for j, c in enumerate(cols)]
+        out.append((text.ljust(left) + "  " + "  ".join(cells)).rstrip())
     return out
 
 

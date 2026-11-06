@@ -13,11 +13,11 @@ def sample(tmp_path, name="s.mvr"):
     return make_mvr(tmp_path / name, [layer("Stage", group("Wall", obj("Box"), fixture("Spot", fid=3, addr=513, focus="fp")), focus("FP", "fp"))], FILES)
 
 
-GOLDEN = """l1 Stage
-  g1 Wall
-    o1 Box  [a.glb]
-    f1 Spot  id=3 mode=Mode addr=513 (u2.1)
-  p1 FP"""
+GOLDEN = """l1  Stage
+├── g1  Wall
+│   ├── o1  Box   [a.glb]
+│   └── f1  Spot  id=3  mode=Mode  addr=513 (u2.1)
+└── p1  FP"""
 
 
 def test_info_golden_and_stable(tmp_path, capsys):
@@ -33,9 +33,9 @@ def test_info_scopes(tmp_path, capsys):
     p = str(sample(tmp_path))
     main(["info", "fixtures", p])
     out = capsys.readouterr().out
-    assert "f1 Spot" in out and "Box" not in out and "g1 Wall" in out
+    assert "f1  Spot" in out and "Box" not in out and "g1  Wall" in out
     main(["info", "patches", p])
-    assert capsys.readouterr().out.strip() == "f1 Spot  id=3 mode=Mode addr=513 (u2.1)"
+    assert capsys.readouterr().out.strip() == "f1  Spot  id=3  mode=Mode  addr=513 (u2.1)"
 
 
 def test_info_json_and_problems(tmp_path, capsys):
